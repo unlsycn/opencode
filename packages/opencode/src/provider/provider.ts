@@ -1141,6 +1141,12 @@ export namespace Provider {
         const chunkAbortCtl = typeof chunkTimeout === "number" && chunkTimeout > 0 ? new AbortController() : undefined
         const signals: AbortSignal[] = []
 
+        // Merge configured headers into request headers
+        opts.headers = {
+          ...(typeof opts.headers === 'object' ? opts.headers : {}),
+          ...options["headers"],
+        }
+
         if (opts.signal) signals.push(opts.signal)
         if (chunkAbortCtl) signals.push(chunkAbortCtl.signal)
         if (options["timeout"] !== undefined && options["timeout"] !== null && options["timeout"] !== false)
