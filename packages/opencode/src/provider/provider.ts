@@ -1119,7 +1119,7 @@ export namespace Provider {
       })
 
       if (baseURL !== undefined) options["baseURL"] = baseURL
-      if (options["apiKey"] === undefined && provider.key) options["apiKey"] = provider.key
+      if (options["apiKey"] === undefined && options["authToken"] === undefined && provider.key) options["apiKey"] = provider.key
       if (model.headers)
         options["headers"] = {
           ...options["headers"],
