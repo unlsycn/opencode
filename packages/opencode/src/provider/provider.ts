@@ -1119,7 +1119,19 @@ export namespace Provider {
       })
 
       if (baseURL !== undefined) options["baseURL"] = baseURL
-      if (options["apiKey"] === undefined && options["authToken"] === undefined && provider.key) options["apiKey"] = provider.key
+      // When authToken is configured, use a dummy apiKey to satisfy SDK validation
+      // and inject Authorization: Bearer via headers (replacing x-api-key at fetch time)
+      const authToken = options["authToken"]
+      delete options["authToken"]
+      if (authToken) {
+        options["apiKey"] = "authToken-placeholder"
+        options["headers"] = {
+          ...options["headers"],
+          "Authorization": `Bearer ${authToken}`,
+        }
+      } else if (options["apiKey"] === undefined && provider.key) {
+        options["apiKey"] = provider.key
+      }
       if (model.headers)
         options["headers"] = {
           ...options["headers"],
@@ -1145,6 +1157,11 @@ export namespace Provider {
         opts.headers = {
           ...(typeof opts.headers === 'object' ? opts.headers : {}),
           ...options["headers"],
+        }
+
+        // When using Bearer auth, remove the dummy x-api-key injected to satisfy SDK validation
+        if (opts.headers?.["Authorization"] && opts.headers?.["x-api-key"] === "authToken-placeholder") {
+          delete opts.headers["x-api-key"]
         }
 
         if (opts.signal) signals.push(opts.signal)
